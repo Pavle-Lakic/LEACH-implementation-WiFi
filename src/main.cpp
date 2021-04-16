@@ -22,7 +22,7 @@ pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
 random_number();
-
+a
 }
 
 void loop() {
