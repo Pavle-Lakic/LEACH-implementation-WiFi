@@ -21,8 +21,6 @@ pinMode(LED_BUILTIN, OUTPUT);
   Serial.println(WiFi.macAddress());
 #endif
 
-random_number();
-
 }
 
 void loop() {
