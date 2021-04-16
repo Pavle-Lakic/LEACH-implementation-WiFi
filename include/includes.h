@@ -21,4 +21,11 @@
 /* Flag which will print debug messages over serial terminal.*/
 #define DEBUG                   1
 
+/**
+ * @brief Generates random number between 0 and 1.
+ * @param none.
+ * @return random number between 0 and 1.
+ */
+float random_number(void);
+
 #endif // INCLUDES_H_

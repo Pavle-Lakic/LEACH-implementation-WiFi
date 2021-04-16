@@ -8,6 +8,7 @@
  *  @bug No known bugs
  */
 #include <Arduino.h>
+#include "includes.h"
 
 void setup() {
 
@@ -19,6 +20,9 @@ pinMode(LED_BUILTIN, OUTPUT);
   Serial.println();
   Serial.println(WiFi.macAddress());
 #endif
+
+random_number();
+
 }
 
 void loop() {
