@@ -1,4 +1,4 @@
-/** @file node.ino
+/** @file main.cpp
  *  @brief
  *  
  *  This file represents baremetal implementation 
