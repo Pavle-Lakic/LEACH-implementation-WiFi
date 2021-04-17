@@ -18,8 +18,22 @@
 #include <Ticker.h>
 #include <FS.h>
 
-/* Flag which will print debug messages over serial terminal.*/
+/** Flag which will print debug messages over serial terminal.*/
 #define DEBUG                   1
+
+
+typedef struct
+{
+    uint8_t nodeName[6];
+    uint16_t adc_value;    
+} Node_s;
+
+/**
+ * @brief Generates random number between 0 and 1.
+ * @param none.
+ * @return random number between 0 and 1.
+ */
+void init_node_name (Node_s * node);
 
 /**
  * @brief Generates random number between 0 and 1.

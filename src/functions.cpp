@@ -10,6 +10,11 @@
 
 #include "includes.h"
 
+void init_node_name (Node_s * node)
+{
+    wifi_get_macaddr(STATION_IF, node->nodeName);
+}
+
 float random_number(void)
 {
   float a;
