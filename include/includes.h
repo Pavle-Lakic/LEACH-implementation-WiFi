@@ -21,17 +21,23 @@
 /** Flag which will print debug messages over serial terminal.*/
 #define DEBUG                   1
 
-
+/**
+ * Structure which defines node. This structure consists of 
+ * Node name, ADC value, current round, and flag which indicates
+ * if node can be cluster head for current round.
+*/
 typedef struct
 {
-    uint8_t nodeName[6];
-    uint16_t adc_value;    
+    uint8_t nodeName[6];    /**< Node name (its mac address)*/
+    uint16_t adc_value;     /**< ADC value of node*/
+    uint8_t round;          /**< Current round*/
+    uint8_t ch_enable;      /**< Flag which indicats if node can be CH in current round*/
 } Node_s;
 
 /**
- * @brief Generates random number between 0 and 1.
- * @param none.
- * @return random number between 0 and 1.
+ * @brief Fills nodeName from structure with mac address.
+ * @param Pointer to Node_s structure.
+ * @return none.
  */
 void init_node_name (Node_s * node);
 
