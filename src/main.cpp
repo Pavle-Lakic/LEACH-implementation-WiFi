@@ -14,9 +14,12 @@ Node_s Node;
 
 void setup() {
 
-pinMode(LED_BUILTIN, OUTPUT);
-// by default LED will be OFF
-digitalWrite(LED_BUILTIN, HIGH);
+    uint16_t round;
+    uint8_t ch_enable;
+
+    pinMode(LED_BUILTIN, OUTPUT);
+    // by default LED will be OFF
+    digitalWrite(LED_BUILTIN, HIGH);
 
 #if DEBUG
     Serial.begin(9600);
@@ -24,10 +27,22 @@ digitalWrite(LED_BUILTIN, HIGH);
     Serial.println();
 #endif
 
-init_node_name(&Node);
+    if (mount_fs()) {
+
+#if ROUNDS_RESET
+        write_fs(0, 1);
+#endif
+
+    read_fs(&round, &ch_enable);
+    }
+
+    Node.round = round;
+    Node.ch_enable = ch_enable;
+    init_node_name(&Node);
 
 #if DEBUG
-    Serial.printf("MAC address = %02X:%02X:%02X:%02X:%02X:%02X\n", Node.nodeName[0], Node.nodeName[1], Node.nodeName[2], Node.nodeName[3], Node.nodeName[4], Node.nodeName[5]);
+    Serial.printf("Beggining of new round!\nround = %hu\nch_enable = %d\n", Node.round, Node.ch_enable);
+    Serial.printf("Node MAC = %02X:%02X:%02X:%02X:%02X:%02X\n", Node.nodeName[0], Node.nodeName[1], Node.nodeName[2], Node.nodeName[3], Node.nodeName[4], Node.nodeName[5]);
 #endif
 
 }

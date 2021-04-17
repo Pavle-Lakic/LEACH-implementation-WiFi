@@ -17,9 +17,18 @@
 #include <stdlib.h>
 #include <Ticker.h>
 #include <FS.h>
+#include "LittleFS.h"
+
+/** Name of file where round and ch_enable flag are written.*/
+#define FILENAME                "/setup.txt"
 
 /** Flag which will print debug messages over serial terminal.*/
 #define DEBUG                   1
+
+/** This flag will create file in FS where round and ch_enable will be saved.
+ *  Also it will reset round to 0, and ch_enable to 1.
+*/
+#define ROUNDS_RESET            0
 
 /**
  * Structure which defines node. This structure consists of 
@@ -48,4 +57,26 @@ void init_node_name (Node_s * node);
  */
 float random_number(void);
 
+/**
+ * @brief Mounts LittleFs.
+ * @param none.
+ * @return True if successful.
+ */
+bool mount_fs(void);
+
+/**
+ * @brief Writes to file in Fs.
+ * @param param1 Current round.
+ * @param param2 Flag which indicates if node can be CH for current round.
+ * @return none.
+ */
+void write_fs(uint16_t round, uint8_t ch_enable);
+
+/**
+ * @brief Reads current round and ch_enable flag from FS.
+ * @param param1 Current round.
+ * @param param2 Flag which indicates if node can be CH for current round.
+ * @return none.
+ */
+void read_fs(uint16_t* round, uint8_t* ch_enable);
 #endif // INCLUDES_H_
