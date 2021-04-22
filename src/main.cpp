@@ -36,6 +36,7 @@ void setup() {
     read_fs(&round, &ch_enable);
     }
 
+    Node.P = 1.0/NUMBER_OF_ROUNDS;
     Node.round = round;
     Node.ch_enable = ch_enable;
     init_node_name(&Node);
@@ -45,6 +46,17 @@ void setup() {
     Serial.printf("Node MAC = %02X:%02X:%02X:%02X:%02X:%02X\n", Node.nodeName[0], Node.nodeName[1], Node.nodeName[2], Node.nodeName[3], Node.nodeName[4], Node.nodeName[5]);
 #endif
 
+    mode_decision(&Node);
+
+#if DEBUG
+    Serial.println("Mode of work decided!");
+    if (Node.cluster_head == true) {
+        Serial.println("I`m cluster head for current round!");
+    }
+    else {
+        Serial.println("I`m station for current round!");
+    }
+#endif
 }
 
 void loop() {

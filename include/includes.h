@@ -28,27 +28,46 @@
 /** This flag will create file in FS where round and ch_enable will be saved.
  *  Also it will reset round to 0, and ch_enable to 1.
 */
-#define ROUNDS_RESET            0
+#define ROUNDS_RESET            1
+
+/** Number of rounds determined apriori. Currently it will be the same as
+ *  number of nodes.
+*/
+#define NUMBER_OF_ROUNDS        7
 
 /**
- * Structure which defines node. This structure consists of 
- * Node name, ADC value, current round, and flag which indicates
- * if node can be cluster head for current round.
+ * Structure which defines node.
 */
 typedef struct
 {
-    uint8_t nodeName[6];    /**< Node name (its mac address)*/
-    uint16_t adc_value;     /**< ADC value of node*/
-    uint8_t round;          /**< Current round*/
-    uint8_t ch_enable;      /**< Flag which indicats if node can be CH in current round*/
+    uint8_t     nodeName[6];    /**< Node name (its mac address).*/
+    uint16_t    adc_value;      /**< ADC value of node.*/
+    uint8_t     round;          /**< Current round.*/
+    uint8_t     ch_enable;      /**< Flag which indicats if node can be CH in current round.*/
+    bool        cluster_head;   /**< True if node is cluster head for current round.*/
+    float       P;              /**< Probability that node will become cluster head in round 0.*/
 } Node_s;
 
 /**
+ * @brief Decides if node will be cluster head or not for current round.
+ * @param node Pointer to Node_s structure.
+ * @return none.
+ */
+void mode_decision(Node_s* Node);
+
+/**
  * @brief Fills nodeName from structure with mac address.
- * @param Pointer to Node_s structure.
+ * @param node Pointer to Node_s structure.
  * @return none.
  */
 void init_node_name (Node_s * node);
+
+/**
+ * @brief Generates threshold for current round.
+ * @param node Pointer to Node_s structure.
+ * @return Threshold.
+ */
+float calculate_threshold(Node_s* node);
 
 /**
  * @brief Generates random number between 0 and 1.
@@ -66,16 +85,16 @@ bool mount_fs(void);
 
 /**
  * @brief Writes to file in Fs.
- * @param param1 Current round.
- * @param param2 Flag which indicates if node can be CH for current round.
+ * @param round Current round.
+ * @param ch_enable Flag which indicates if node can be CH for current round.
  * @return none.
  */
 void write_fs(uint16_t round, uint8_t ch_enable);
 
 /**
  * @brief Reads current round and ch_enable flag from FS.
- * @param param1 Current round.
- * @param param2 Flag which indicates if node can be CH for current round.
+ * @param round Current round.
+ * @param ch_enable Flag which indicates if node can be CH for current round.
  * @return none.
  */
 void read_fs(uint16_t* round, uint8_t* ch_enable);
