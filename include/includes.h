@@ -62,7 +62,7 @@ typedef struct
     uint8_t     ch_enable;              /**< Flag which indicats if node can be CH in current round.*/
     bool        cluster_head;           /**< True if node is cluster head for current round.*/
     float       P;                      /**< Probability that node will become cluster head in round 0.*/
-    char      strongest_ssid[20];     /**< Strongest SSID node can connect to, will depend on case.*/
+    char      strongest_ssid[20];       /**< Strongest valid SSID node can connect to.*/
 } Node_s;
 
 /**
@@ -76,6 +76,14 @@ typedef enum
     NO_NETWORKS_FOUND,
     VALID_SSID_FOUND
 } node_return_codes_e;
+
+/**
+ * @brief Function which will set broadcast address in domain
+ * where node is connected (from DNS).
+ * @param dns DNS ip address.
+ * @return broadcast address.
+ */
+IPAddress create_broadcast_address(IPAddress dns);
 
 /**
  * @brief Sends UDP packet to cluster head (access point).

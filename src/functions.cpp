@@ -10,18 +10,36 @@
 
 #include "includes.h"
 
+IPAddress create_broadcast_address(IPAddress dns)
+{
+    IPAddress broadcast(dns[0], dns[1], dns[2], 255);
 
+    return broadcast;
+}
 
 void send_packet_to_ap(Node_s* node)
 {
     WiFiUDP Udp;
     IPAddress dnsAddress;
+    IPAddress broadcastAddress;
     dnsAddress = WiFi.dnsIP();
+
+#if DEBUG
+    Serial.print("Local IP address = ");
+    Serial.println(WiFi.localIP());
+    Serial.print("DNS address = ");
+    Serial.println(dnsAddress);
+#endif
+
     char node_name[40] = {0};
+    char adc_value_string[20] = {0};
     char upper_nibla;
     char lower_nibla;
     char upper_nibla_string[2];
     char lower_nibla_string[2];
+
+    node_name[39] = '\0';
+    adc_value_string [19] = '\0';
 
     for (int i = 0; i < 6; i++) {
         lower_nibla = node->nodeName[i] & 0x0F;
@@ -31,20 +49,43 @@ void send_packet_to_ap(Node_s* node)
         strcat(node_name, upper_nibla_string);
         strcat(node_name, lower_nibla_string);
     }
-    //strcat(node_name, "\r\n");
 
-Serial.print("NODE NAME = ");
-Serial.println(node_name);
-Serial.println(strlen(node_name));
+    sprintf(adc_value_string, "%u", node->adc_value);
 
+#if DEBUG
+    Serial.print("NODE NAME = ");
+    Serial.println(node_name);
+    Serial.println(strlen(node_name));
+#endif
 
+    broadcastAddress = create_broadcast_address(dnsAddress);
 
-/*
-    Udp.beginPacket(dnsAddress, UDP_BROADCAST_PORT);
-    Udp.write(";");
-    Udp.write(node->nodeName);
-    Udp.write()
-*/
+#if DEBUG
+    Serial.print("Broadcast address = ");
+    Serial.println(broadcastAddress);
+#endif
+
+    if (Udp.beginPacket(broadcastAddress, UDP_BROADCAST_PORT) == 1) {
+
+#if DEBUG
+    Serial.println("Sending packet!");
+#endif
+
+    Udp.write("\r\n;");
+    Udp.write(node_name);
+    Udp.write(":");
+    Udp.write(adc_value_string);
+    Udp.write("\r\n");
+
+    }
+
+    if (Udp.endPacket() == 1) {
+#if DEBUG
+    Serial.println("Packet sent!");
+#endif
+
+    }
+    
 }
 
 void get_adc_value(Node_s* node)
