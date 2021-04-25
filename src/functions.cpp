@@ -16,13 +16,13 @@ void send_to_base(Node_s* node)
 {
     WiFiUDP Udp;
     IPAddress broadcast, dnsAddress;
-    dnsAddress = WiFi.dnsIP();
     int connected = FAILED_TO_CONNECT;
 
     connected = connect_to_strongest_ssid(node);
 
     if (connected == CONNECTED) {
 
+    dnsAddress = WiFi.dnsIP();
 #if DEBUG
         Serial.println("Sending udp to base..");
 #endif
@@ -31,7 +31,6 @@ void send_to_base(Node_s* node)
         Udp.beginPacket(broadcast, UDP_BROADCAST_PORT);
         Udp.write(accumulateBuffer);
         Udp.endPacket();
-        //TODO check if it works
     }
 }
 
