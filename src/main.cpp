@@ -51,6 +51,10 @@ void setup() {
 
     mode_decision(&Node);
 
+    if (Node.cluster_head == true) {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+
 #if DEBUG
     Serial.println("Mode of work decided!");
     if (Node.cluster_head == true) {

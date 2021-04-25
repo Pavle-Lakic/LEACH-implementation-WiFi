@@ -10,6 +10,146 @@
 
 #include "includes.h"
 
+char accumulateBuffer[255] = {0};
+
+void send_to_base(Node_s* node)
+{
+    WiFiUDP Udp;
+    IPAddress broadcast, dnsAddress;
+    dnsAddress = WiFi.dnsIP();
+    int connected = FAILED_TO_CONNECT;
+
+    connected = connect_to_strongest_ssid(node);
+
+    if (connected == CONNECTED) {
+
+#if DEBUG
+        Serial.println("Sending udp to base..");
+#endif
+
+        broadcast = create_broadcast_address(dnsAddress);
+        Udp.beginPacket(broadcast, UDP_BROADCAST_PORT);
+        Udp.write(accumulateBuffer);
+        Udp.endPacket();
+        //TODO check if it works
+    }
+}
+
+bool check_if_message_is_valid(char *txt, unsigned char l)
+{
+    bool correct = false;
+
+    if (l <= MAX_MESSAGE_SIZE) {
+        if (    
+            (txt[0] == ';') && isxdigit(txt[1]) && isxdigit(txt[2]) &&
+            isxdigit(txt[3]) && isxdigit(txt[4]) && isxdigit(txt[5]) &&
+            isxdigit(txt[6]) && isxdigit(txt[7]) && isxdigit(txt[8]) &&
+            isxdigit(txt[9]) && isxdigit(txt[10]) && isxdigit(txt[11]) &&
+            isxdigit(txt[12]) && (txt[13] == ':') 
+            ) 
+        {
+            correct = true;
+        }
+    }
+
+
+    return correct;
+}
+
+void parse_packets(Node_s* node)
+{
+    WiFiUDP Udp;
+    uint32_t timeout_start = millis();
+    char packetBuffer[255] = {0};
+
+    accumulateBuffer[254] = '\0';
+
+    Udp.begin(UDP_BROADCAST_PORT);
+
+    while ((millis() - timeout_start) < WAIT_FOR_PACKETS) {
+        yield();
+
+        int packetSize = Udp.parsePacket();
+
+        if (packetSize) {
+#if DEBUG
+                Serial.printf("Received packet of size %d from %s:%d\n    (to %s:%d, free heap = %d B)\n",
+                    packetSize,
+                    Udp.remoteIP().toString().c_str(), Udp.remotePort(),
+                    Udp.destinationIP().toString().c_str(), Udp.localPort(),
+                    ESP.getFreeHeap());
+#endif
+
+                int n = Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+                packetBuffer[n] = '\0';
+
+#if DEBUG
+                Serial.println("Contents of packet buffer:");
+                Serial.println(packetBuffer);
+#endif
+                bool valid_message = false;
+                valid_message = check_if_message_is_valid(packetBuffer, n);
+
+                if (valid_message == true) {
+                    strcat(accumulateBuffer, packetBuffer);
+                }
+                else {
+#if DEBUG
+                    Serial.println("Message invalid!");
+#endif
+                }
+        }
+
+    }
+
+#if DEBUG
+    Serial.println("Done waiting for stations! Accumulated buffer = ");
+    Serial.println(accumulateBuffer);
+#endif
+    
+}
+
+bool set_access_point(Node_s* node)
+{    
+    char node_name[40] = {0};
+    char adc_value_string[20] = {0};
+    char upper_nibla;
+    char lower_nibla;
+    char upper_nibla_string[2];
+    char lower_nibla_string[2];
+    bool success =  false;
+    char buffer_string [50] = {0};
+
+    node_name[39] = '\0';
+    adc_value_string [19] = '\0';
+    buffer_string[49] = '\0';
+
+    for (int i = 0; i < 6; i++) {
+        lower_nibla = node->nodeName[i] & 0x0F;
+        upper_nibla = (node->nodeName[i] & 0xF0) >> 4;
+        sprintf(upper_nibla_string, "%X", upper_nibla);
+        sprintf(lower_nibla_string, "%X", lower_nibla);
+        strcat(node_name, upper_nibla_string);
+        strcat(node_name, lower_nibla_string);
+    }
+
+    strcat(buffer_string, ";");
+    strcat(buffer_string, node_name);
+    strcat(buffer_string, ":");
+    sprintf(adc_value_string, "%u", node->adc_value);
+    strcat(buffer_string, adc_value_string);
+    strcat(accumulateBuffer, buffer_string);
+
+    WiFi.mode(WIFI_AP);
+
+    if(WiFi.softAP(node_name, NODE_PASS, WIFI_CHANNEL, false, MAX_CONNECTED) == true) {
+
+        success = true;
+   }
+
+    return success;
+}
+
 IPAddress create_broadcast_address(IPAddress dns)
 {
     IPAddress broadcast(dns[0], dns[1], dns[2], 255);
@@ -71,15 +211,15 @@ void send_packet_to_ap(Node_s* node)
     Serial.println("Sending packet!");
 #endif
 
-    Udp.write("\r\n;");
+    Udp.write(";");
     Udp.write(node_name);
     Udp.write(":");
     Udp.write(adc_value_string);
-    Udp.write("\r\n");
 
     }
 
     if (Udp.endPacket() == 1) {
+
 #if DEBUG
     Serial.println("Packet sent!");
 #endif
@@ -99,13 +239,20 @@ int connect_to_strongest_ssid(Node_s* node)
     unsigned long start;
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(String(node->strongest_ssid), NODE_PASS);
+
+    if (node->cluster_head == false) {
+        WiFi.begin(String(node->strongest_ssid), NODE_PASS);
+    }
+    else {
+        WiFi.begin(BASE_SSID, NODE_PASS);
+    }
 
 #if DEBUG
     Serial.print("Connecting to ");
     Serial.print(node->strongest_ssid);
     Serial.println("...");
 #endif
+
     start = millis();
 
     while (WiFi.status() != WL_CONNECTED && ((millis() - start) < CONNECTION_TIMEOUT)) {
@@ -190,9 +337,28 @@ void handle_node(Node_s* node)
 {
     int ssid_status;
     int connection_status;
+    bool success = false;
 
     if (node->cluster_head == true) {
-        //TODO case of cluster head
+       success =  set_access_point(node);
+
+        if (success == true) {
+
+#if DEBUG
+        Serial.println("Successfully created Access Point!");
+#endif
+        parse_packets(node);
+
+        send_to_base(node);
+
+        }
+        else {
+
+#if DEBUG
+        Serial.println("Did not create Access point! Deep sleep?");
+#endif
+
+        }
     }
     else {
         ssid_status = find_strongest_connection(node);
@@ -254,9 +420,11 @@ bool mount_fs(void)
 { 
   bool success = LittleFS.begin();
   if (!success){
+
 #if DEBUG
     Serial.println("Could not mount SPIFFS!");
 #endif
+
   }
   return success;
 }
@@ -269,9 +437,11 @@ void write_fs(uint16_t round, uint8_t ch_enable)
     File fp = LittleFS.open(FILENAME, "w");
 
     if (!fp) {
+
 #if DEBUG
         Serial.printf("Could not open %s to write!\n", FILENAME);
-#endif        
+#endif   
+
     }
     else {
         utoa(round, (char*)round_str, 10);
@@ -288,9 +458,11 @@ void read_fs(uint16_t* round, uint8_t* ch_enable)
     uint8_t ch_enable_str[sizeof(uint8_t)*8 +1];
     File fp = LittleFS.open(FILENAME, "r");
     if (!fp) {
+
 #if DEBUG
         Serial.printf("Could not open %s to read!\n", FILENAME);
-#endif        
+#endif
+
     }
     else {
         fp.read(round_str, sizeof(round_str));

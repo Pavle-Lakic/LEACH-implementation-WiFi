@@ -42,14 +42,26 @@
 /** This will be password for all nodes.*/
 #define NODE_PASS               "teorijazavere"
 
+/** WiFi channel.*/
+#define WIFI_CHANNEL              1
+
+/** Maximum possible number of connected devices to node.*/
+#define MAX_CONNECTED             7
+
 /** Timeout for connection in ms.*/
 #define CONNECTION_TIMEOUT      15000
+
+/** Timeout for udp packets waiting in ms.*/
+#define WAIT_FOR_PACKETS        15000
 
 /** Local UDP port where data from stations will be sent.*/
 #define UDP_BROADCAST_PORT      50000
 
 /** Analog input pin.*/
-#define ADC_PIN                   A0
+#define ADC_PIN                 A0
+
+/** Maximum valid received message size.*/
+#define MAX_MESSAGE_SIZE        18
 
 /**
  * Structure which defines node.
@@ -76,6 +88,38 @@ typedef enum
     NO_NETWORKS_FOUND,
     VALID_SSID_FOUND
 } node_return_codes_e;
+
+/**
+ * @brief Tries to connect to base station, and send accumulated
+ * buffer.
+ * @param node Pointer to Node_s structure.
+ * @return none.
+ */
+void send_to_base(Node_s* node);
+
+/**
+ * @brief Check if received message from UDP broadcast port
+ * has correct pattern.
+ * @param txt Received message.
+ * @param l Length of message.
+ * @return true if pattern is correct.
+ */
+bool check_if_message_is_valid(char *txt, unsigned char l);
+
+/**
+ * @brief Listen to UDP broadcast port, parse packet
+ * and accumulate message.
+ * @param node Pointer to Node_s structure
+ * @return none.
+ */
+void parse_packets(Node_s* node);
+
+/**
+ * @brief Sets access point in order for stations to connect.
+ * @param node Pointer to Node_s structure
+ * @return true if successful.
+ */
+bool set_access_point(Node_s* node);
 
 /**
  * @brief Function which will set broadcast address in domain
