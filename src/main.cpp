@@ -14,6 +14,9 @@ Node_s Node;
 
 void setup() {
 
+    WiFi.disconnect();
+    WiFi.forceSleepBegin(); // turn of WiFi by default.
+    WiFi.persistent(false);
     uint16_t round;
     uint8_t ch_enable;
 
@@ -22,7 +25,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, HIGH);
 
 #if DEBUG
-    Serial.begin(9600);
+    Serial.begin(115200);
     delay(10);
     Serial.println();
 #endif
@@ -42,8 +45,8 @@ void setup() {
     init_node_name(&Node);
 
 #if DEBUG
-    Serial.printf("Beggining of new round!\nround = %hu\nch_enable = %d\n", Node.round, Node.ch_enable);
-    Serial.printf("Node MAC = %02X:%02X:%02X:%02X:%02X:%02X\n", Node.nodeName[0], Node.nodeName[1], Node.nodeName[2], Node.nodeName[3], Node.nodeName[4], Node.nodeName[5]);
+    Serial.printf("Beggining of new round!\r\nround = %hu\r\nch_enable = %d\r\n", Node.round, Node.ch_enable);
+    Serial.printf("Node MAC = %02X:%02X:%02X:%02X:%02X:%02X\r\n", Node.nodeName[0], Node.nodeName[1], Node.nodeName[2], Node.nodeName[3], Node.nodeName[4], Node.nodeName[5]);
 #endif
 
     mode_decision(&Node);
@@ -57,6 +60,8 @@ void setup() {
         Serial.println("I`m station for current round!");
     }
 #endif
+
+    handle_node(&Node);
 }
 
 void loop() {
