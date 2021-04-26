@@ -14,7 +14,8 @@ Node_s Node;
 
 void setup() {
 
-    unsigned long start_of_program = micros();
+    timer1_enable(TIM_DIV256, TIM_EDGE, TIM_SINGLE);
+    timer1_write(8388607);
 
     WiFi.disconnect();
     WiFi.forceSleepBegin(); // turn off WiFi by default.
@@ -72,7 +73,7 @@ void setup() {
 
     handle_node(&Node);
     prepare_next_round(&Node);
-    sleeping_time(start_of_program);
+    sleeping_time();
 }
 
 void loop() {

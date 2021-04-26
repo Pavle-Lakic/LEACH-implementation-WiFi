@@ -12,11 +12,9 @@
 
 char accumulateBuffer[255] = {0};
 
-void sleeping_time(unsigned long start)
+void sleeping_time(void)
 {
-    unsigned long stop =  micros();
-    unsigned long diff = stop - start;
-    unsigned long sleepTime = SLEEP_PERIOD - diff;
+    unsigned long sleepTime = timer1_read()*(3.2);
 
 #if DEBUG
     Serial.print("Time to sleep in ms = ");
@@ -91,14 +89,14 @@ bool check_if_message_is_valid(char *txt, unsigned char l)
 void parse_packets(Node_s* node)
 {
     WiFiUDP Udp;
-    uint32_t timeout_start = millis();
+    uint32_t timeout_start = timer1_read();
     char packetBuffer[255] = {0};
-
-    accumulateBuffer[254] = '\0';
 
     Udp.begin(UDP_BROADCAST_PORT);
 
-    while ((millis() - timeout_start) < WAIT_FOR_PACKETS) {
+    
+
+    while ((timeout_start - timer1_read()) < 3125000) {
         yield();
 
         int packetSize = Udp.parsePacket();
@@ -155,6 +153,7 @@ bool set_access_point(Node_s* node)
     node_name[39] = '\0';
     adc_value_string [19] = '\0';
     buffer_string[49] = '\0';
+    accumulateBuffer[254] = '\0';
 
     for (int i = 0; i < 6; i++) {
         lower_nibla = node->nodeName[i] & 0x0F;

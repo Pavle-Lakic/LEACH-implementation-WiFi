@@ -66,7 +66,7 @@
 /** Period in us which is used to calculate for how long node
  * will be in deep sleep.
  */
-#define SLEEP_PERIOD            60000000
+#define SLEEP_PERIOD            18750
 
 /**
  * Structure which defines node.
@@ -96,10 +96,9 @@ typedef enum
 
 /**
  * @brief Calculates for how long node will go to deep sleep.
- * @param start Start of program.
  * @return none.
  */
-void sleeping_time(unsigned long start);
+void sleeping_time(void);
 
 /**
  * @brief Preperes round counter, and ch_enable flag for next round.
