@@ -12,9 +12,13 @@
 
 char accumulateBuffer[255] = {0};
 
-void sleeping_time(void)
+void sleeping_time(Node_s* node)
 {
     unsigned long sleepTime = timer1_read()*(3.2);
+
+    if (node->cluster_head == true) {
+        sleepTime -= 500000;
+    }
 
 #if DEBUG
     Serial.print("Time to sleep in ms = ");

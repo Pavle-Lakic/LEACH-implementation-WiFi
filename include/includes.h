@@ -98,7 +98,7 @@ typedef enum
  * @brief Calculates for how long node will go to deep sleep.
  * @return none.
  */
-void sleeping_time(void);
+void sleeping_time(Node_s* node);
 
 /**
  * @brief Preperes round counter, and ch_enable flag for next round.

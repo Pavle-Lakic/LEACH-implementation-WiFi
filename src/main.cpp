@@ -73,7 +73,7 @@ void setup() {
 
     handle_node(&Node);
     prepare_next_round(&Node);
-    sleeping_time();
+    sleeping_time(&Node);
 }
 
 void loop() {
