@@ -12,6 +12,39 @@
 
 char accumulateBuffer[255] = {0};
 
+void sleeping_time(unsigned long start)
+{
+    unsigned long stop =  micros();
+    unsigned long diff = stop - start;
+    unsigned long sleepTime = SLEEP_PERIOD - diff;
+
+#if DEBUG
+    Serial.print("Time to sleep in ms = ");
+    Serial.println(sleepTime/1000);
+#endif
+
+    ESP.deepSleep(sleepTime);
+}
+
+void prepare_next_round(Node_s* node)
+{
+    uint16_t next_round = node->round + 1;
+    uint8_t ch_enable;
+
+    if (node->cluster_head == true) {
+        ch_enable = 0;
+    }
+    else {
+        ch_enable = 1;
+    }
+
+    if (next_round >= NUMBER_OF_ROUNDS) {
+        next_round = 0;
+        ch_enable = 1;
+    }
+    write_fs(next_round, ch_enable);
+}
+
 void send_to_base(Node_s* node)
 {
     WiFiUDP Udp;
@@ -360,6 +393,10 @@ void handle_node(Node_s* node)
         }
     }
     else {
+        WiFi.forceSleepBegin();
+        delay(1000);
+        WiFi.forceSleepWake();
+
         ssid_status = find_strongest_connection(node);
 
         if (ssid_status == VALID_SSID_FOUND) {

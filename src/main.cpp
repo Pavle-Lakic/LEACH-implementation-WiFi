@@ -14,15 +14,17 @@ Node_s Node;
 
 void setup() {
 
+    unsigned long start_of_program = micros();
+
     WiFi.disconnect();
-    WiFi.forceSleepBegin(); // turn of WiFi by default.
+    WiFi.forceSleepBegin(); // turn off WiFi by default.
     WiFi.persistent(false);
     uint16_t round;
     uint8_t ch_enable;
 
     pinMode(LED_BUILTIN, OUTPUT);
-    // by default LED will be OFF
-    digitalWrite(LED_BUILTIN, HIGH);
+    // by default LED will be ON
+    digitalWrite(LED_BUILTIN, LOW);
 
 #if DEBUG
     Serial.begin(115200);
@@ -54,6 +56,9 @@ void setup() {
     if (Node.cluster_head == true) {
         digitalWrite(LED_BUILTIN, LOW);
     }
+    else {
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
 
 #if DEBUG
     Serial.println("Mode of work decided!");
@@ -66,8 +71,10 @@ void setup() {
 #endif
 
     handle_node(&Node);
+    prepare_next_round(&Node);
+    sleeping_time(start_of_program);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
 }

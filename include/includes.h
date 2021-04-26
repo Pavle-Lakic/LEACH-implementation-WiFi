@@ -29,7 +29,7 @@
 /** This flag will create file in FS where round and ch_enable will be saved.
  *  Also it will reset round to 0, and ch_enable to 1.
 */
-#define ROUNDS_RESET            1
+#define ROUNDS_RESET            0
 
 /** Number of rounds determined apriori. Currently it will be the same as
  *  number of nodes.
@@ -52,7 +52,7 @@
 #define CONNECTION_TIMEOUT      15000
 
 /** Timeout for udp packets waiting in ms.*/
-#define WAIT_FOR_PACKETS        15000
+#define WAIT_FOR_PACKETS        10000
 
 /** Local UDP port where data from stations will be sent.*/
 #define UDP_BROADCAST_PORT      50000
@@ -62,6 +62,11 @@
 
 /** Maximum valid received message size.*/
 #define MAX_MESSAGE_SIZE        18
+
+/** Period in us which is used to calculate for how long node
+ * will be in deep sleep.
+ */
+#define SLEEP_PERIOD            60000000
 
 /**
  * Structure which defines node.
@@ -88,6 +93,20 @@ typedef enum
     NO_NETWORKS_FOUND,
     VALID_SSID_FOUND
 } node_return_codes_e;
+
+/**
+ * @brief Calculates for how long node will go to deep sleep.
+ * @param start Start of program.
+ * @return none.
+ */
+void sleeping_time(unsigned long start);
+
+/**
+ * @brief Preperes round counter, and ch_enable flag for next round.
+ * @param node Pointer to Node_s structure.
+ * @return none.
+ */
+void prepare_next_round(Node_s* node);
 
 /**
  * @brief Tries to connect to base station, and send accumulated
