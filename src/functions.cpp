@@ -288,13 +288,14 @@ int connect_to_strongest_ssid(Node_s* node)
     Serial.println("...");
 #endif
 
-    start = millis();
+    start = timer1_read();
 
-    while (WiFi.status() != WL_CONNECTED && ((millis() - start) < CONNECTION_TIMEOUT)) {
-        delay(20);
+    while (WiFi.status() != WL_CONNECTED && (start - (timer1_read()) < 4687500)) {
+        //delay(20);
+        yield();
     }
 
-    if ((millis() - start) > CONNECTION_TIMEOUT) {
+    if (start - timer1_read() > 4687500) {
         ret = CONNECTION_TIMEOUT;
     } 
 
@@ -350,7 +351,8 @@ int find_strongest_connection(Node_s* node)
                     ret = VALID_SSID_FOUND;
                 }
             }
-            delay(20);
+            //delay(20);
+            yield();
         }
     }
 
