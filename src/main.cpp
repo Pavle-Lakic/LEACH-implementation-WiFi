@@ -73,6 +73,7 @@ void setup() {
 
     handle_node(&Node);
     prepare_next_round(&Node);
+    delay(200); // wait for UDP to be sent.
     sleeping_time(&Node);
 }
 
